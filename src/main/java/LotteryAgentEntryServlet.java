@@ -8,9 +8,9 @@ import java.util.List;
 /**
  * Created by krzysztof on 12.11.17.
  */
-public class LotteryAgentEntry extends HttpServlet {
+public class LotteryAgentEntryServlet extends HttpServlet {
 
-    private static final Logger logger = Logger.getLogger(LotteryAgentEntry.class);
+    private static final Logger logger = Logger.getLogger(LotteryAgentEntryServlet.class);
 
     private List<Integer> createRandomNumbers() {
         return Collections.emptyList();
