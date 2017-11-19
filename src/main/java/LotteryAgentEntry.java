@@ -58,8 +58,14 @@ public class LotteryAgentEntry extends HttpServlet {
     private void writeResponseToClient(HttpServletResponse resp, List<Integer> randomNumbers, String lotteryBossResponseString) throws IOException {
         resp
                 .setContentType("text/plain; charset=utf-8");
+
+        StringBuilder responseString = new StringBuilder("Twoje liczby to: ")
+                .append(randomNumbers)
+                .append("\n")
+                .append(lotteryBossResponseString);
+
         resp.getWriter()
-                .println(randomNumbers + ", " + lotteryBossResponseString);
+                .println(responseString);
     }
 
     private String getLotteryBossResponse(String numbersAsJson) throws IOException, WrongResponseException {
