@@ -12,11 +12,13 @@ public class LotteryAgentEntry extends HttpServlet {
 
     private static final Logger logger = Logger.getLogger(LotteryAgentEntry.class);
 
+    private List<Integer> createRandomNumbers() {
+        return Collections.emptyList();
+    }
+
     private void writeResponseToClient(HttpServletResponse resp, List<Integer> randomNumbers) {
 
     }
 
-    private List<Integer> createRandomNumbers() {
-        return Collections.emptyList();
-    }
+
 }
