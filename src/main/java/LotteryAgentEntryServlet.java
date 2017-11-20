@@ -1,6 +1,7 @@
 import com.google.gson.Gson;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.BasicResponseHandler;
@@ -22,9 +23,9 @@ import java.util.stream.Collectors;
  * Created by krzysztof on 12.11.17.
  */
 @WebServlet(urlPatterns = "/play")
-public class LotteryAgentEntry extends HttpServlet {
+public class LotteryAgentEntryServlet extends HttpServlet {
 
-    private static final Logger logger = Logger.getLogger(LotteryAgentEntry.class);
+    private static final Logger logger = Logger.getLogger(LotteryAgentEntryServlet.class);
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -70,14 +71,13 @@ public class LotteryAgentEntry extends HttpServlet {
 
     private String getLotteryBossResponse(String numbersAsJson) throws IOException, WrongResponseException {
         HttpClient httpClient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("http://localhost:8081/lotteryBoss/results");
+        HttpPost httpPost = new HttpPost("http://localhost:8082/lotteryBoss/results");
         httpPost.setEntity(new StringEntity(numbersAsJson));
         httpPost.setHeader(new BasicHeader("content-type", "application/json"));
-
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(10).build();
+        httpPost.setConfig(requestConfig);
         HttpResponse lotteryBossResponse = httpClient.execute(httpPost);
-
         int statusCode = lotteryBossResponse.getStatusLine().getStatusCode();
-
         if (statusCode == 200) {
             return new BasicResponseHandler()
                     .handleResponse(lotteryBossResponse);
