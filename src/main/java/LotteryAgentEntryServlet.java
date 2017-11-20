@@ -16,6 +16,11 @@ public class LotteryAgentEntryServlet extends HttpServlet {
         return Collections.emptyList();
     }
 
+    /**
+     * Wypisanie odpowiedzi za pomocą getWriter()
+     * @param resp
+     * @param randomNumbers
+     */
     private void writeResponseToClient(HttpServletResponse resp, List<Integer> randomNumbers) {
 
     }
