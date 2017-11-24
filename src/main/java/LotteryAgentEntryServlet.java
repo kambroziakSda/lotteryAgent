@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -27,33 +28,49 @@ public class LotteryAgentEntryServlet extends HttpServlet {
 
     private static final Logger logger = Logger.getLogger(LotteryAgentEntryServlet.class);
 
+    private static final int DEFAULT_LEVEL = 1;
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         List<Integer> randomNumbers = getRandomNumbers();
-        String numbersAsJson = new Gson().toJson(randomNumbers);
-
+        randomNumbers.sort(Comparator.naturalOrder());
+        Integer level = getLevel(req);
+        LotteryParameters lotteryParameters = new LotteryParameters(randomNumbers, level);
         try {
-            String lotteryBossResponse = getLotteryBossResponse(numbersAsJson);
+            String lotteryBossResponse = getLotteryBossResponse(lotteryParameters);
             writeResponseToClient(resp, randomNumbers, lotteryBossResponse);
         } catch (WrongResponseException e) {
-            writeErrorResponse(resp, e);
+            logger.info("LotteryBoss wrong response: " + e.getResponseStatusCode(), e);
+            writeErrorMessage(resp);
         } catch (IOException e1) {
             logger.info("LotteryBoss communication problem !", e1);
-            resp
-                    .getWriter()
-                    .println("Sorry, we had some troubles, try again later");
+            writeErrorMessage(resp);
         }
 
     }
 
-    private void writeErrorResponse(HttpServletResponse resp, WrongResponseException e) throws IOException {
-        logger.info("LotteryBoss wrong response: " + e.getResponseStatusCode(), e);
-        resp
-                .setContentType("text/plain; charset=utf-8");
-
+    private void writeErrorMessage(HttpServletResponse resp) throws IOException {
         resp
                 .getWriter()
                 .println("Sorry, we had some troubles, try again later");
+    }
+
+    private Integer getLevel(HttpServletRequest req) {
+        String levelString = req.getParameter("level");
+        if (levelString == null) {
+            return DEFAULT_LEVEL;
+        }
+        try {
+            Integer level = Integer.valueOf(levelString);
+            if (level < 1 || level > 6) {
+                logger.warn("Level out of bound: " + levelString + " returning efault level: " + DEFAULT_LEVEL);
+                return DEFAULT_LEVEL;
+            }
+            return level;
+        } catch (NumberFormatException e) {
+            logger.warn("Exception when parsing level: " + levelString, e);
+            return DEFAULT_LEVEL;
+        }
     }
 
     private void writeResponseToClient(HttpServletResponse resp, List<Integer> randomNumbers, String lotteryBossResponseString) throws IOException {
@@ -69,10 +86,11 @@ public class LotteryAgentEntryServlet extends HttpServlet {
                 .println(responseString);
     }
 
-    private String getLotteryBossResponse(String numbersAsJson) throws IOException, WrongResponseException {
+    private String getLotteryBossResponse(LotteryParameters lotteryParameters) throws IOException, WrongResponseException {
+        String lotteryParametersAsJson = new Gson().toJson(lotteryParameters);
         HttpClient httpClient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("http://localhost:8082/lotteryBoss/results");
-        httpPost.setEntity(new StringEntity(numbersAsJson));
+        HttpPost httpPost = new HttpPost("http://localhost:8082/lotteryBoss/api/results");
+        httpPost.setEntity(new StringEntity(lotteryParametersAsJson));
         httpPost.setHeader(new BasicHeader("content-type", "application/json"));
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(10).build();
         httpPost.setConfig(requestConfig);
@@ -88,7 +106,7 @@ public class LotteryAgentEntryServlet extends HttpServlet {
 
     private List<Integer> getRandomNumbers() {
         return new Random()
-                .ints(6, 1, 49)
+                .ints(6, 1, 50)
                 .mapToObj(Integer::valueOf)
                 .collect(Collectors.toList());
 
