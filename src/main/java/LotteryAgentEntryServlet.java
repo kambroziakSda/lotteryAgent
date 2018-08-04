@@ -68,10 +68,11 @@ public class LotteryAgentEntryServlet extends HttpServlet {
      * @param lotteryBossResponse
      */
     private void writeResponseToClient(HttpServletResponse resp, LotteryBossParameters parameters, String lotteryBossResponse) throws IOException {
+        resp.setContentType("text/plain;charset=utf8");
         resp.getWriter().println("Twoje liczby to: " + parameters.getRandomNumbers());
         resp.getWriter().println("Level: "+parameters.getLevel());
         resp.getWriter().println(lotteryBossResponse);
-        resp.setContentType("text/plain;charest=utf8");
+
     }
 
 
