@@ -89,10 +89,10 @@ public class LotteryAgentEntryServlet extends HttpServlet {
     private String getLotteryBossResponse(LotteryParameters lotteryParameters) throws IOException, WrongResponseException {
         String lotteryParametersAsJson = new Gson().toJson(lotteryParameters);
         HttpClient httpClient = HttpClients.createDefault();
-        HttpPost httpPost = new HttpPost("http://localhost:8082/lotteryBoss/api/results");
+        HttpPost httpPost = new HttpPost("http://" + getLotteryBossHost() + ":" + getLotteryBossPort() + "/lotteryBoss/api/results");
         httpPost.setEntity(new StringEntity(lotteryParametersAsJson));
         httpPost.setHeader(new BasicHeader("content-type", "application/json"));
-        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(10).build();
+        RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(1000).build();
         httpPost.setConfig(requestConfig);
         HttpResponse lotteryBossResponse = httpClient.execute(httpPost);
         int statusCode = lotteryBossResponse.getStatusLine().getStatusCode();
@@ -102,6 +102,14 @@ public class LotteryAgentEntryServlet extends HttpServlet {
         }
         throw new WrongResponseException(statusCode);
 
+    }
+
+    private String getLotteryBossPort() {
+        return System.getenv("LOTTERY_BOSS_PORT");
+    }
+
+    private String getLotteryBossHost() {
+        return System.getenv("LOTTERY_BOSS_HOST");
     }
 
     private List<Integer> getRandomNumbers() {
